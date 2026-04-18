@@ -18,7 +18,7 @@ jobs:
   test:
     uses: ./.github/workflows/vitest.yml
 
-  publish-npm:
+  publish:
     needs:
       - build
       - test
