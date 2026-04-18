@@ -22,9 +22,6 @@
       "types": "./types/index.d.ts"
     }
   },
-  "workspaces": [
-    "playground"
-  ],
   "scripts": {
     "test": "vitest run",
     "build": "tsc"
