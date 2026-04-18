@@ -9,6 +9,9 @@ on:
       - published
 
 jobs:
+  lint:
+    uses: ./.github/workflows/eslint.yml
+
   build:
     uses: ./.github/workflows/tsc.yml
 
