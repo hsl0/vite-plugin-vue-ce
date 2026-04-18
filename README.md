@@ -56,8 +56,8 @@ Required when the [`lib`](#lib) option is `true`.
 
 ```js
 vueCustomElements({
- customElements: { ... },
- lib: true
+	customElements: { ... },
+	lib: true
 })
 ```
 
