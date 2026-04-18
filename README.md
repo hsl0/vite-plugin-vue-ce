@@ -40,7 +40,7 @@ export default {
 ```js
 vueCustomElements({
 	customElements: {
-		MyComponent: './src/components/MyComponent.ce.vue',
+		YourComponent: './src/components/MyComponent.ce.vue',
 		'x-app': './src/components/VApp.ce.vue',
 	},
 });
@@ -77,7 +77,7 @@ vueCustomElements({
 // ./src/ce-options.js
 import { pinia } from './store';
 
-export default (component) => ({
+export default (name, component) => ({
 	shadowRoot: false,
 	configureApp(app) {
 		app.use(pinia);
@@ -85,7 +85,7 @@ export default (component) => ({
 });
 ```
 
-Specifies a module whose default export is a factory function. The factory receives the component options and returns [`CustomElementOptions`](https://vuejs.org/api/custom-elements.html#definecustomelement), passed as the second argument to `defineCustomElement`. Applies to all custom elements registered by this plugin.
+Specifies a module whose default export is a factory function. The factory receives the custom element name and component options and returns [`CustomElementOptions`](https://vuejs.org/api/custom-elements.html#definecustomelement), passed as the second argument to `defineCustomElement`. Applies to all custom elements registered by this plugin.
 
 ### customElementPrefix
 
