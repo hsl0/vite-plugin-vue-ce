@@ -46,9 +46,28 @@ export default function vueCustomElements(pluginOptions: Options = {}): Plugin {
 			...rmap,
 			[resolve(value)]: key,
 		};
-	}, {}); // {componentFile: renamedComponents[]}
+	}, {}); // {componentFile: renamedComponents}
 	const resolvedMap: Record<string, (typeof reverseMap)[keyof typeof reverseMap]> =
 		{};
+
+	function updateMap<K extends string | number | symbol, V>(
+		targetMap: Record<K, V>,
+		key: K,
+		value: V | undefined | null,
+		onDuplicated: (oldValue: V, newValue: V, key: K) => never,
+	) {
+		if (value) {
+			if (targetMap[key] && targetMap[key] !== value) {
+				return onDuplicated(targetMap[key], value, key);
+			}
+
+			targetMap[key] = value;
+
+			return true;
+		}
+
+		return false;
+	}
 
 	return {
 		name: 'vue-ce',
@@ -108,12 +127,27 @@ export default function vueCustomElements(pluginOptions: Options = {}): Plugin {
 					: source;
 				const resolved = await this.resolve(src, importer, options);
 				if (resolved) {
-					if (src in reverseMap) {
-						resolvedMap[resolved.id] = reverseMap[src]!;
-					}
-					if (resolve(resolved.id) in reverseMap) {
-						resolvedMap[resolved.id] = reverseMap[resolve(resolved.id)]!;
-					}
+					const onDuplicated = (
+						oldValue: string,
+						newValue: string,
+						key: string,
+					) =>
+						this.error(
+							`Duplicated custom element definitions: ${oldValue}, ${newValue} (on ${key})`,
+						);
+
+					updateMap(
+						resolvedMap,
+						resolved.id,
+						reverseMap[src],
+						onDuplicated,
+					) ||
+						updateMap(
+							resolvedMap,
+							resolved.id,
+							reverseMap[resolve(resolved.id)],
+							onDuplicated,
+						);
 
 					return {
 						...resolved,
