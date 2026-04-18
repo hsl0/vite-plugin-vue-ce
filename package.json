@@ -6,28 +6,38 @@
     "vue",
     "ce"
   ],
+  "homepage": "https://github.com/hsl0/vite-plugin-vue-ce#readme",
+  "bugs": {
+    "url": "https://github.com/hsl0/vite-plugin-vue-ce/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hsl0/vite-plugin-vue-ce.git"
+  },
   "license": "MIT",
   "author": "hsl0",
   "type": "module",
-  "files": [
-    "dist",
-    "types"
-  ],
-  "main": "dist/index.js",
-  "types": "types/index.d.ts",
   "exports": {
     ".": {
       "default": "./dist/index.js",
       "types": "./types/index.d.ts"
     }
   },
+  "main": "dist/index.js",
+  "types": "types/index.d.ts",
+  "directories": {
+    "test": "test"
+  },
+  "files": [
+    "dist",
+    "types"
+  ],
   "scripts": {
     "test": "vitest run",
     "build": "tsc"
   },
-  "peerDependencies": {
-    "vite": "~5 || ~6 || ~7 || ~8",
-    "vue": "^3.2.0"
+  "dependencies": {
+    "cheerio": "^1.2.0"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",
@@ -37,7 +47,8 @@
     "vite": "^8.0.8",
     "vitest": "^4.1.4"
   },
-  "dependencies": {
-    "cheerio": "^1.2.0"
+  "peerDependencies": {
+    "vite": "~5 || ~6 || ~7 || ~8",
+    "vue": "^3.2.0"
   }
 }
