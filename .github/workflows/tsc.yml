@@ -18,6 +18,7 @@ on:
       - src/
       - tsconfig.json
       - .github/workflows/tsc.yml
+  workflow_call:
 
 jobs:
   build:

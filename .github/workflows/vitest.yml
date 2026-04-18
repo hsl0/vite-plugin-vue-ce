@@ -20,9 +20,10 @@ on:
       - test/
       - vitest.config.ts
       - .github/workflows/vitest.yml
+  workflow_call:
 
 jobs:
-  build:
+  test:
 
     runs-on: ubuntu-latest
 
