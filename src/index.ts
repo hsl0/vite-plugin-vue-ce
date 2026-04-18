@@ -126,6 +126,7 @@ export default function vueCustomElements(pluginOptions: Options = {}): Plugin {
 							`Duplicated custom element definitions: ${oldValue}, ${newValue} (on ${key})`,
 						);
 
+					// eslint-disable-next-line @typescript-eslint/no-unused-expressions
 					updateMap(resolvedMap, resolved.id, reverseMap[src], onDuplicated) ||
 						updateMap(
 							resolvedMap,
@@ -145,7 +146,7 @@ export default function vueCustomElements(pluginOptions: Options = {}): Plugin {
 		},
 		load: {
 			order: 'pre',
-			handler(id, loadOptions) {
+			handler(id) {
 				if (!id.startsWith(virtualModulePrefix)) return null;
 
 				const src = getSrcFromVirtualModule(id);

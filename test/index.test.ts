@@ -5,6 +5,7 @@ import type { Plugin } from 'vite';
 function getHooks(plugin: Plugin) {
 	const transformIndexHtml = plugin.transformIndexHtml as {
 		order: string;
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		handler: (html: string, ctx: Record<string, any>) => string;
 	};
 	const load = plugin.load as {
