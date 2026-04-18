@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import vueCERegister from '../src/index.js';
+import vueCustomElements from '../src/index.js';
 import type { Plugin } from 'vite';
 
 function getHooks(plugin: Plugin) {

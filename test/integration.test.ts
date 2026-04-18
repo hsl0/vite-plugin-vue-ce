@@ -3,7 +3,7 @@ import { build, createServer, type InlineConfig, type Plugin, type ViteDevServer
 import type { RolldownOutput } from 'rolldown';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
-import vueCERegister from '../src/index.js';
+import vueCustomElements from '../src/index.js';
 
 function getBuildOutputs(result: unknown): RolldownOutput[] {
 	const arr = Array.isArray(result) ? result : [result];
@@ -55,7 +55,7 @@ const mockVuePlugin = (): Plugin => ({
 
 const baseConfig = {
 	root: fixturesDir,
-	plugins: [vueCERegister(), mockVuePlugin()],
+	plugins: [vueCustomElements(), mockVuePlugin()],
 	logLevel: 'silent' as const,
 };
 
@@ -94,7 +94,7 @@ describe('lib mode (lib: true)', () => {
 	const libConfig: InlineConfig = {
 		root: fixturesDir,
 		plugins: [
-			vueCERegister({
+			vueCustomElements({
 				lib: true,
 				customElements: {
 					'hello-world': path.join(fixturesDir, 'HelloWorld.ce.vue'),
@@ -121,7 +121,7 @@ describe('optionFile', () => {
 		const optionFile = path.join(fixturesDir, 'ce-options.js');
 		const { js } = await buildAssets({
 			...baseConfig,
-			plugins: [vueCERegister({ optionFile }), mockVuePlugin()],
+			plugins: [vueCustomElements({ optionFile }), mockVuePlugin()],
 		});
 		expect(js).toContain('optionFactory');
 		expect(js).toMatch(/customElements\.define\(["'`]hello-world["'`],/);
@@ -152,15 +152,14 @@ describe('dev mode', () => {
 </html>`,
 		);
 
-		expect(html).toContain('/@id/virtual:vue-ce-register:');
-		expect(html).not.toContain('./HelloWorld.ce.vue"');
+		expect(html).toContain('/@id/HelloWorld.ce.vue"');
 	});
 
 	it('serves virtual module with customElements.define code', async () => {
 		server = await createServer({ ...baseConfig, server: { port: 0 } });
 		await server.listen();
 
-		const virtualId = `virtual:vue-ce-register:${fixturesDir}/HelloWorld.ce.vue.js`;
+		const virtualId = `\0virtual:vue-ce-register:${fixturesDir}/HelloWorld.ce.vue.js`;
 		const resolved = await server.pluginContainer.resolveId(virtualId);
 		const loaded = await server.pluginContainer.load(resolved!.id);
 		const code = typeof loaded === 'string' ? loaded : loaded?.code;

@@ -2,15 +2,21 @@
 
 Automatically register Vue custom elements by using HTML script tags.
 
+## Installation
+
+```sh
+npm install vite-plugin-vue-ce --save-dev
+```
+
 ## Usage
 
 ```js
 // vite.config.js
 import vue from '@vitejs/plugin-vue';
-import vueCE from 'vite-plugin-vue-ce';
+import vueCustomElements from 'vite-plugin-vue-ce';
 
 export default {
-    plugins: [vueCE(), vue()],
+    plugins: [vueCustomElements(), vue()],
 };
 ```
 
@@ -32,7 +38,7 @@ export default {
 ### customElements
 
 ```js
-vueCE({
+vueCustomElements({
  customElements: {
   MyComponent: './src/components/MyComponent.ce.vue',
   'x-app': './src/components/VApp.ce.vue'
@@ -49,7 +55,7 @@ Required when the [`lib`](#lib) option is `true`.
 ### lib
 
 ```js
-vueCE({
+vueCustomElements({
  customElements: { ... },
  lib: true
 })
@@ -62,7 +68,7 @@ When `false` (default), Vite generates assets for `index.html` including the cus
 ### optionFile
 
 ```js
-vueCE({
+vueCustomElements({
  optionFile: './src/ce-options.js'
 })
 ```
@@ -84,7 +90,7 @@ Specifies a module whose default export is a factory function. The factory recei
 ### customElementPrefix
 
 ```js
-vueCE({
+vueCustomElements({
  customElementPrefix: 'x-'
 })
 ```
@@ -94,7 +100,7 @@ Prepends a prefix to all custom element names registered by this plugin, includi
 ### include
 
 ```js
-vueCE({
+vueCustomElements({
  include: ['templates/**/*.html', 'components/**/*.ce.vue']
 })
 ```
@@ -106,7 +112,7 @@ Vue components not matched by this option will not be registered as custom eleme
 ### exclude
 
 ```js
-vueCE({
+vueCustomElements({
  exclude: ['static/**/*.html', 'private/**/*.ce.vue']
 })
 ```

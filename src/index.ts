@@ -29,7 +29,7 @@ export interface Options {
 	lib?: boolean;
 }
 
-export default function vueCERegister(pluginOptions: Options = {}): Plugin {
+export default function vueCustomElements(pluginOptions: Options = {}): Plugin {
 	const customElementPrefix = pluginOptions.customElementPrefix || '';
 	const includeFilter = createFilter(pluginOptions.include, pluginOptions.exclude);
 	const reverseMap = Object.entries(pluginOptions.customElements || {}).reduce<
@@ -51,7 +51,7 @@ export default function vueCERegister(pluginOptions: Options = {}): Plugin {
 		{};
 
 	return {
-		name: 'vue-ce-register',
+		name: 'vue-ce',
 		options(rollupOptions) {
 			return {
 				...rollupOptions,
