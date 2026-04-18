@@ -29,6 +29,25 @@ export interface Options {
 	lib?: boolean;
 }
 
+function updateMap<K extends string | number | symbol, V>(
+	targetMap: Record<K, V>,
+	key: K,
+	value: V | undefined | null,
+	onDuplicated: (oldValue: V, newValue: V, key: K) => never,
+) {
+	if (value) {
+		if (targetMap[key] && targetMap[key] !== value) {
+			return onDuplicated(targetMap[key], value, key);
+		}
+
+		targetMap[key] = value;
+
+		return true;
+	}
+
+	return false;
+}
+
 export default function vueCustomElements(pluginOptions: Options = {}): Plugin {
 	const customElementPrefix = pluginOptions.customElementPrefix || '';
 	const includeFilter = createFilter(pluginOptions.include, pluginOptions.exclude);
@@ -47,36 +66,14 @@ export default function vueCustomElements(pluginOptions: Options = {}): Plugin {
 			[resolve(value)]: key,
 		};
 	}, {}); // {componentFile: renamedComponents}
-	const resolvedMap: Record<string, (typeof reverseMap)[keyof typeof reverseMap]> =
-		{};
-
-	function updateMap<K extends string | number | symbol, V>(
-		targetMap: Record<K, V>,
-		key: K,
-		value: V | undefined | null,
-		onDuplicated: (oldValue: V, newValue: V, key: K) => never,
-	) {
-		if (value) {
-			if (targetMap[key] && targetMap[key] !== value) {
-				return onDuplicated(targetMap[key], value, key);
-			}
-
-			targetMap[key] = value;
-
-			return true;
-		}
-
-		return false;
-	}
+	const resolvedMap: Record<string, (typeof reverseMap)[keyof typeof reverseMap]> = {};
 
 	return {
 		name: 'vue-ce',
 		options(rollupOptions) {
 			return {
 				...rollupOptions,
-				input: pluginOptions.lib
-					? Object.keys(reverseMap)
-					: rollupOptions.input!,
+				input: pluginOptions.lib ? Object.keys(reverseMap) : rollupOptions.input!,
 			};
 		},
 		transformIndexHtml: {
@@ -104,10 +101,8 @@ export default function vueCustomElements(pluginOptions: Options = {}): Plugin {
 			async handler(source, importer, options) {
 				// Handle virtual module import
 				// Only when importing from html or .ce.vue entrypoint
-				const isDirectVirtualModuleImport =
-					source.startsWith(virtualModulePrefix);
-				const isCustomElementModule =
-					source.endsWith('.ce.vue') && includeFilter(source);
+				const isDirectVirtualModuleImport = source.startsWith(virtualModulePrefix);
+				const isCustomElementModule = source.endsWith('.ce.vue') && includeFilter(source);
 				const isEntry = !importer;
 				const isImportedFromHTMLEntry =
 					importer?.endsWith('.html') && includeFilter(importer);
@@ -115,8 +110,7 @@ export default function vueCustomElements(pluginOptions: Options = {}): Plugin {
 				if (
 					!(
 						isDirectVirtualModuleImport ||
-						(isCustomElementModule &&
-							(isEntry || isImportedFromHTMLEntry))
+						(isCustomElementModule && (isEntry || isImportedFromHTMLEntry))
 					)
 				)
 					return null;
@@ -127,21 +121,12 @@ export default function vueCustomElements(pluginOptions: Options = {}): Plugin {
 					: source;
 				const resolved = await this.resolve(src, importer, options);
 				if (resolved) {
-					const onDuplicated = (
-						oldValue: string,
-						newValue: string,
-						key: string,
-					) =>
+					const onDuplicated = (oldValue: string, newValue: string, key: string) =>
 						this.error(
 							`Duplicated custom element definitions: ${oldValue}, ${newValue} (on ${key})`,
 						);
 
-					updateMap(
-						resolvedMap,
-						resolved.id,
-						reverseMap[src],
-						onDuplicated,
-					) ||
+					updateMap(resolvedMap, resolved.id, reverseMap[src], onDuplicated) ||
 						updateMap(
 							resolvedMap,
 							resolved.id,
@@ -164,13 +149,9 @@ export default function vueCustomElements(pluginOptions: Options = {}): Plugin {
 				if (!id.startsWith(virtualModulePrefix)) return null;
 
 				const src = getSrcFromVirtualModule(id);
-				const componentName = src
-					.split('/')
-					.at(-1)
-					?.slice(0, -'.ce.vue'.length);
+				const componentName = src.split('/').at(-1)?.slice(0, -'.ce.vue'.length);
 
-				if (!componentName)
-					return this.error(`Invalid component name in ${src}`);
+				if (!componentName) return this.error(`Invalid component name in ${src}`);
 
 				const ceName =
 					(customElementPrefix || '') +
