@@ -274,4 +274,48 @@ describe('resolveId', () => {
 		);
 		expect(result).toBeNull();
 	});
+
+	it('does not re-enter itself when resolving .ce.vue from HTML (no infinite loop)', async () => {
+		const { resolveId } = getHooks(vueCustomElements());
+		let callCount = 0;
+
+		// Simulate Rollup without skipSelf: re-enters this plugin on every this.resolve() call.
+		// If the plugin passes skipSelf:true, the mock short-circuits and returns a real id.
+		// If the plugin does NOT pass skipSelf:true, callCount exceeds the limit and throws,
+		// causing this test to fail.
+		const ctx = {
+			resolve: vi.fn(
+				async (
+					src: string,
+					importer?: string,
+					options?: object
+				): Promise<{ id: string } | null> => {
+					callCount++;
+					if (callCount > 10)
+						throw new Error(
+							`Infinite loop: resolveId re-entered ${callCount} times without skipSelf`
+						);
+					if ((options as Record<string, unknown>)?.skipSelf)
+						return { id: '/abs/' + src.replace('./', '') };
+					return resolveId.handler.call(
+						ctx,
+						src,
+						importer,
+						options ?? {}
+					) as Promise<{ id: string } | null>;
+				}
+			),
+		};
+
+		const result = await resolveId.handler.call(
+			ctx,
+			'./VApp.ce.vue',
+			'/project/index.html',
+			{}
+		);
+		expect(callCount).toBe(1);
+		expect(result).toMatchObject({
+			id: '\0virtual:vue-ce-register:/abs/VApp.ce.vue.js',
+		});
+	});
 });

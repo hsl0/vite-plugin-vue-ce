@@ -128,10 +128,13 @@ export default function vueCustomElements(pluginOptions: Options = {}): Plugin {
 					return null;
 
 				// Prepare virtual module id with fully resolved module id
-				const src = source.startsWith(virtualModulePrefix)
+				const src = isDirectVirtualModuleImport
 					? getSrcFromVirtualModule(source)
 					: source;
-				const resolved = await this.resolve(src, importer, options);
+				const resolved = await this.resolve(src, importer, {
+					...options,
+					skipSelf: true,
+				});
 				if (resolved) {
 					const onDuplicated = (
 						oldValue: string,
