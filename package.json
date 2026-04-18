@@ -26,7 +26,7 @@
     "playground"
   ],
   "scripts": {
-    "test": "vitest",
+    "test": "vitest run",
     "build": "tsc"
   },
   "peerDependencies": {
