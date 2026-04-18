@@ -33,6 +33,7 @@ export interface Options {
 }
 
 export default function vueCustomElements(pluginOptions: Options = {}): Plugin {
+	const resolving = Symbol('resolving by vue-ce');
 	const customElementPrefix = pluginOptions.customElementPrefix || '';
 	const includeFilter = createFilter(
 		pluginOptions.include,
@@ -87,6 +88,8 @@ export default function vueCustomElements(pluginOptions: Options = {}): Plugin {
 			order: 'pre',
 			async handler(source, importer, options) {
 				// Handle virtual module import
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				const isRequestedBySelf = options.custom?.[resolving as any];
 				// Only when importing from html or .ce.vue entrypoint
 				const isDirectVirtualModuleImport =
 					source.startsWith(virtualModulePrefix);
@@ -97,6 +100,7 @@ export default function vueCustomElements(pluginOptions: Options = {}): Plugin {
 					importer?.endsWith('.html') && includeFilter(importer);
 
 				if (
+					isRequestedBySelf ||
 					!(
 						isDirectVirtualModuleImport ||
 						(isCustomElementModule && (isEntry || isImportedFromHTMLEntry))
@@ -111,6 +115,10 @@ export default function vueCustomElements(pluginOptions: Options = {}): Plugin {
 				const resolved = await this.resolve(src, importer, {
 					...options,
 					skipSelf: true,
+					custom: {
+						...options,
+						[resolving]: true,
+					},
 				});
 				if (resolved) {
 					if (reverseMap[src]) {
