@@ -28,7 +28,7 @@ export default {
     <script type="module" src="./src/components/MyComponent.ce.vue"></script>
   </head>
   <body>
-    <my-component />
+    <my-component></my-component>
   </body>
 </html>
 ```
