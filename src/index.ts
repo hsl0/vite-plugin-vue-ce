@@ -14,6 +14,7 @@ import type { Plugin } from 'vite';
 import type { ComponentOptions, CustomElementOptions } from 'vue';
 
 export type CustomElementOptionFactory = (
+	name: string,
 	component:
 		| (ComponentOptions & CustomElementOptions)
 		| ComponentOptions['setup']
@@ -31,25 +32,6 @@ export interface Options {
 	lib?: boolean;
 }
 
-function updateMap<K extends string | number | symbol, V>(
-	targetMap: Record<K, V>,
-	key: K,
-	value: V | undefined | null,
-	onDuplicated: (oldValue: V, newValue: V, key: K) => never
-) {
-	if (value) {
-		if (targetMap[key] && targetMap[key] !== value) {
-			return onDuplicated(targetMap[key], value, key);
-		}
-
-		targetMap[key] = value;
-
-		return true;
-	}
-
-	return false;
-}
-
 export default function vueCustomElements(pluginOptions: Options = {}): Plugin {
 	const customElementPrefix = pluginOptions.customElementPrefix || '';
 	const includeFilter = createFilter(
@@ -57,23 +39,18 @@ export default function vueCustomElements(pluginOptions: Options = {}): Plugin {
 		pluginOptions.exclude
 	);
 	const reverseMap = Object.entries(pluginOptions.customElements || {}).reduce<
-		Record<string, string>
+		Record<string, string[]>
 	>((rmap, [key, value]) => {
 		const resolved = resolve(value);
 
-		if (rmap[resolved])
-			throw new TypeError(
-				`Duplicated custom element definition: ${resolved} for ${rmap[resolved]} and ${key}`
-			);
-
 		return {
 			...rmap,
-			[resolve(value)]: key,
+			[resolved]: [...(rmap[resolved] || []), key],
 		};
 	}, {}); // {componentFile: renamedComponents}
 	const resolvedMap: Record<
 		string,
-		(typeof reverseMap)[keyof typeof reverseMap]
+		Set<(typeof reverseMap)[keyof typeof reverseMap][number]>
 	> = {};
 
 	return {
@@ -136,23 +113,18 @@ export default function vueCustomElements(pluginOptions: Options = {}): Plugin {
 					skipSelf: true,
 				});
 				if (resolved) {
-					const onDuplicated = (
-						oldValue: string,
-						newValue: string,
-						key: string
-					) =>
-						this.error(
-							`Duplicated custom element definitions: ${oldValue}, ${newValue} (on ${key})`
-						);
-
-					// eslint-disable-next-line @typescript-eslint/no-unused-expressions
-					updateMap(resolvedMap, resolved.id, reverseMap[src], onDuplicated) ||
-						updateMap(
-							resolvedMap,
-							resolved.id,
-							reverseMap[resolve(resolved.id)],
-							onDuplicated
-						);
+					if (reverseMap[src]) {
+						resolvedMap[resolved.id] = new Set([
+							...(resolvedMap[resolved.id] ?? []),
+							...reverseMap[src],
+						]);
+					}
+					if (reverseMap[resolve(resolved.id)]) {
+						resolvedMap[resolved.id] = new Set([
+							...(resolvedMap[resolved.id] ?? []),
+							...reverseMap[resolve(resolved.id)]!,
+						]);
+					}
 
 					return {
 						...resolved,
@@ -177,15 +149,17 @@ export default function vueCustomElements(pluginOptions: Options = {}): Plugin {
 				if (!componentName)
 					return this.error(`Invalid component name in ${src}`);
 
-				const ceName =
-					(customElementPrefix || '') +
-					pascalCaseToKebabCase(resolvedMap[src] ?? componentName);
+				const ceNames = Array.from(resolvedMap[src] ?? [componentName]).map(
+					(name) =>
+						(customElementPrefix || '') +
+						pascalCaseToKebabCase(name ?? componentName)
+				);
 
 				// Generate customElement definition code
 				return {
 					code: generateCustomElementDefineModule(
 						src,
-						[ceName],
+						ceNames,
 						pluginOptions.optionFile
 					),
 					ast: null,

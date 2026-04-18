@@ -1,3 +1,10 @@
+function generateFunctionCallCode(
+	functionIdentifier: string,
+	argumentList: string[]
+) {
+	return `${functionIdentifier}(${argumentList.join(', ')})`;
+}
+
 function generateDefineCustomElementCode(
 	componentIdentifier: string,
 	optionIdentifier?: string
@@ -11,7 +18,7 @@ function generateDefineCustomElementCode(
 function generateCustomElementDefineCode(
 	name: string,
 	componentIdentifier: string
-): string {
+) {
 	return `if(!customElements.get(${JSON.stringify(name)})) {
 	customElements.define(${JSON.stringify(name)}, ${componentIdentifier});
 }
@@ -25,11 +32,24 @@ export function generateCustomElementDefineModule(
 ) {
 	const componentIdentifier = 'VComponent';
 	const optionIdentifier = 'optionFactory';
-	const customElementIdentifier = 'VCustomElement';
 
 	return `import { defineCustomElement } from "vue";
 ${optionModule ? `import ${optionIdentifier} from ${JSON.stringify(optionModule)};` : ''}
 import ${componentIdentifier} from ${JSON.stringify(module)};
-const ${customElementIdentifier} = ${generateDefineCustomElementCode(componentIdentifier, optionModule ? `${optionIdentifier}(${componentIdentifier})` : undefined)};
-${ceNames.map((name) => generateCustomElementDefineCode(name, customElementIdentifier)).join('')}`;
+${ceNames
+	.map((name) =>
+		generateCustomElementDefineCode(
+			name,
+			generateDefineCustomElementCode(
+				componentIdentifier,
+				optionModule
+					? generateFunctionCallCode(optionIdentifier, [
+							JSON.stringify(name),
+							componentIdentifier,
+						])
+					: undefined
+			)
+		)
+	)
+	.join('')}`;
 }

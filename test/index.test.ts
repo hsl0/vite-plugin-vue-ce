@@ -121,7 +121,7 @@ describe('load', () => {
 			'import optionFactory from "/path/to/ce-options.js"'
 		);
 		expect(result?.code).toContain(
-			'defineCustomElement(VComponent, optionFactory(VComponent))'
+			'defineCustomElement(VComponent, optionFactory("v-app", VComponent))'
 		);
 	});
 
@@ -133,20 +133,6 @@ describe('load', () => {
 		);
 		expect(result?.code).not.toContain('optionFactory');
 		expect(result?.code).toContain('defineCustomElement(VComponent)');
-	});
-});
-
-describe('plugin options', () => {
-	it('throws TypeError for duplicate customElements paths', () => {
-		const samePath = '/path/to/VApp.ce.vue';
-		expect(() =>
-			vueCustomElements({
-				customElements: {
-					'v-app': samePath,
-					'x-app': samePath,
-				},
-			})
-		).toThrow(TypeError);
 	});
 });
 
