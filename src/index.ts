@@ -14,7 +14,9 @@ import type { Plugin } from 'vite';
 import type { ComponentOptions, CustomElementOptions } from 'vue';
 
 export type CustomElementOptionFactory = (
-	component: (ComponentOptions & CustomElementOptions) | ComponentOptions['setup'],
+	component:
+		| (ComponentOptions & CustomElementOptions)
+		| ComponentOptions['setup']
 ) => CustomElementOptions;
 
 export interface Options {
@@ -33,7 +35,7 @@ function updateMap<K extends string | number | symbol, V>(
 	targetMap: Record<K, V>,
 	key: K,
 	value: V | undefined | null,
-	onDuplicated: (oldValue: V, newValue: V, key: K) => never,
+	onDuplicated: (oldValue: V, newValue: V, key: K) => never
 ) {
 	if (value) {
 		if (targetMap[key] && targetMap[key] !== value) {
@@ -50,7 +52,10 @@ function updateMap<K extends string | number | symbol, V>(
 
 export default function vueCustomElements(pluginOptions: Options = {}): Plugin {
 	const customElementPrefix = pluginOptions.customElementPrefix || '';
-	const includeFilter = createFilter(pluginOptions.include, pluginOptions.exclude);
+	const includeFilter = createFilter(
+		pluginOptions.include,
+		pluginOptions.exclude
+	);
 	const reverseMap = Object.entries(pluginOptions.customElements || {}).reduce<
 		Record<string, string>
 	>((rmap, [key, value]) => {
@@ -58,7 +63,7 @@ export default function vueCustomElements(pluginOptions: Options = {}): Plugin {
 
 		if (rmap[resolved])
 			throw new TypeError(
-				`Duplicated custom element definition: ${resolved} for ${rmap[resolved]} and ${key}`,
+				`Duplicated custom element definition: ${resolved} for ${rmap[resolved]} and ${key}`
 			);
 
 		return {
@@ -66,14 +71,19 @@ export default function vueCustomElements(pluginOptions: Options = {}): Plugin {
 			[resolve(value)]: key,
 		};
 	}, {}); // {componentFile: renamedComponents}
-	const resolvedMap: Record<string, (typeof reverseMap)[keyof typeof reverseMap]> = {};
+	const resolvedMap: Record<
+		string,
+		(typeof reverseMap)[keyof typeof reverseMap]
+	> = {};
 
 	return {
 		name: 'vue-ce',
 		options(rollupOptions) {
 			return {
 				...rollupOptions,
-				input: pluginOptions.lib ? Object.keys(reverseMap) : rollupOptions.input!,
+				input: pluginOptions.lib
+					? Object.keys(reverseMap)
+					: rollupOptions.input!,
 			};
 		},
 		transformIndexHtml: {
@@ -101,8 +111,10 @@ export default function vueCustomElements(pluginOptions: Options = {}): Plugin {
 			async handler(source, importer, options) {
 				// Handle virtual module import
 				// Only when importing from html or .ce.vue entrypoint
-				const isDirectVirtualModuleImport = source.startsWith(virtualModulePrefix);
-				const isCustomElementModule = source.endsWith('.ce.vue') && includeFilter(source);
+				const isDirectVirtualModuleImport =
+					source.startsWith(virtualModulePrefix);
+				const isCustomElementModule =
+					source.endsWith('.ce.vue') && includeFilter(source);
 				const isEntry = !importer;
 				const isImportedFromHTMLEntry =
 					importer?.endsWith('.html') && includeFilter(importer);
@@ -121,9 +133,13 @@ export default function vueCustomElements(pluginOptions: Options = {}): Plugin {
 					: source;
 				const resolved = await this.resolve(src, importer, options);
 				if (resolved) {
-					const onDuplicated = (oldValue: string, newValue: string, key: string) =>
+					const onDuplicated = (
+						oldValue: string,
+						newValue: string,
+						key: string
+					) =>
 						this.error(
-							`Duplicated custom element definitions: ${oldValue}, ${newValue} (on ${key})`,
+							`Duplicated custom element definitions: ${oldValue}, ${newValue} (on ${key})`
 						);
 
 					// eslint-disable-next-line @typescript-eslint/no-unused-expressions
@@ -132,7 +148,7 @@ export default function vueCustomElements(pluginOptions: Options = {}): Plugin {
 							resolvedMap,
 							resolved.id,
 							reverseMap[resolve(resolved.id)],
-							onDuplicated,
+							onDuplicated
 						);
 
 					return {
@@ -150,9 +166,13 @@ export default function vueCustomElements(pluginOptions: Options = {}): Plugin {
 				if (!id.startsWith(virtualModulePrefix)) return null;
 
 				const src = getSrcFromVirtualModule(id);
-				const componentName = src.split('/').at(-1)?.slice(0, -'.ce.vue'.length);
+				const componentName = src
+					.split('/')
+					.at(-1)
+					?.slice(0, -'.ce.vue'.length);
 
-				if (!componentName) return this.error(`Invalid component name in ${src}`);
+				if (!componentName)
+					return this.error(`Invalid component name in ${src}`);
 
 				const ceName =
 					(customElementPrefix || '') +
@@ -163,7 +183,7 @@ export default function vueCustomElements(pluginOptions: Options = {}): Plugin {
 					code: generateCustomElementDefineModule(
 						src,
 						[ceName],
-						pluginOptions.optionFile,
+						pluginOptions.optionFile
 					),
 					ast: null,
 					moduleSideEffects: true,

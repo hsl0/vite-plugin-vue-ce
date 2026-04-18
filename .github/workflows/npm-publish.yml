@@ -23,7 +23,7 @@ jobs:
       - build
       - test
     permissions:
-      id-token: write  # Required for OIDC
+      id-token: write # Required for OIDC
       contents: read
     environment: Publish
     runs-on: ubuntu-latest

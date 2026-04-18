@@ -1,63 +1,67 @@
 {
-  "name": "vite-plugin-vue-ce",
-  "description": "Vite plugin for auto registering Vue custom elements imported from HTML",
-  "keywords": [
-    "vite",
-    "vue",
-    "ce"
-  ],
-  "homepage": "https://github.com/hsl0/vite-plugin-vue-ce#readme",
-  "bugs": {
-    "url": "https://github.com/hsl0/vite-plugin-vue-ce/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/hsl0/vite-plugin-vue-ce.git"
-  },
-  "license": "MIT",
-  "author": "hsl0",
-  "type": "module",
-  "exports": {
-    ".": {
-      "default": "./dist/index.js",
-      "types": "./types/index.d.ts"
-    }
-  },
-  "main": "dist/index.js",
-  "types": "types/index.d.ts",
-  "directories": {
-    "test": "test"
-  },
-  "files": [
-    "dist",
-    "types"
-  ],
-  "scripts": {
-    "test": "vitest run",
-    "build": "tsc",
-    "lint": "eslint"
-  },
-  "dependencies": {
-    "cheerio": "^1.2.0"
-  },
-  "devDependencies": {
-    "@eslint/js": "^10.0.1",
-    "@eslint/json": "^1.2.0",
-    "@eslint/markdown": "^8.0.1",
-    "@types/node": "^25.6.0",
-    "@vitest/coverage-v8": "^4.1.4",
-    "acorn": "^8.16.0",
-    "eslint": "^10.2.1",
-    "eslint-plugin-vue": "^10.8.0",
-    "globals": "^17.5.0",
-    "jiti": "^2.6.1",
-    "typescript": "^6.0.3",
-    "typescript-eslint": "^8.58.2",
-    "vite": "^8.0.8",
-    "vitest": "^4.1.4"
-  },
-  "peerDependencies": {
-    "vite": "~5 || ~6 || ~7 || ~8",
-    "vue": "^3.2.0"
-  }
+	"name": "vite-plugin-vue-ce",
+	"description": "Vite plugin for auto registering Vue custom elements imported from HTML",
+	"keywords": [
+		"vite",
+		"vue",
+		"ce"
+	],
+	"homepage": "https://github.com/hsl0/vite-plugin-vue-ce#readme",
+	"bugs": {
+		"url": "https://github.com/hsl0/vite-plugin-vue-ce/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/hsl0/vite-plugin-vue-ce.git"
+	},
+	"license": "MIT",
+	"author": "hsl0",
+	"type": "module",
+	"exports": {
+		".": {
+			"default": "./dist/index.js",
+			"types": "./types/index.d.ts"
+		}
+	},
+	"main": "dist/index.js",
+	"types": "types/index.d.ts",
+	"directories": {
+		"test": "test"
+	},
+	"files": [
+		"dist",
+		"types"
+	],
+	"scripts": {
+		"test": "vitest run",
+		"build": "tsc",
+		"lint": "eslint",
+		"fix-lint": "eslint --fix",
+		"format": "prettier --write .",
+		"check-format": "prettier --check ."
+	},
+	"dependencies": {
+		"cheerio": "^1.2.0"
+	},
+	"devDependencies": {
+		"@eslint/js": "^10.0.1",
+		"@eslint/json": "^1.2.0",
+		"@eslint/markdown": "^8.0.1",
+		"@types/node": "^25.6.0",
+		"@vitest/coverage-v8": "^4.1.4",
+		"acorn": "^8.16.0",
+		"eslint": "^10.2.1",
+		"eslint-plugin-vue": "^10.8.0",
+		"globals": "^17.5.0",
+		"jiti": "^2.6.1",
+		"prettier": "^3.8.3",
+		"typescript": "^6.0.3",
+		"typescript-eslint": "^8.58.2",
+		"vite": "^8.0.8",
+		"vitest": "^4.1.4"
+	},
+	"peerDependencies": {
+		"vite": "~5 || ~6 || ~7 || ~8",
+		"vue": "^3.2.0"
+	}
 }

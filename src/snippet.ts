@@ -1,6 +1,6 @@
 function generateDefineCustomElementCode(
 	componentIdentifier: string,
-	optionIdentifier?: string,
+	optionIdentifier?: string
 ) {
 	const argList = optionIdentifier
 		? [componentIdentifier, optionIdentifier]
@@ -10,7 +10,7 @@ function generateDefineCustomElementCode(
 
 function generateCustomElementDefineCode(
 	name: string,
-	componentIdentifier: string,
+	componentIdentifier: string
 ): string {
 	return `if(!customElements.get(${JSON.stringify(name)})) {
 	customElements.define(${JSON.stringify(name)}, ${componentIdentifier});
@@ -21,7 +21,7 @@ function generateCustomElementDefineCode(
 export function generateCustomElementDefineModule(
 	module: string,
 	ceNames: string[],
-	optionModule?: string,
+	optionModule?: string
 ) {
 	const componentIdentifier = 'VComponent';
 	const optionIdentifier = 'optionFactory';

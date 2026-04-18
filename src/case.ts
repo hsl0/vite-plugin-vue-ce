@@ -12,8 +12,7 @@ export function kebabCaseToPascalCase(kebabCase: string): string {
 		.split('-')
 		.map(
 			(fragment) =>
-				(fragment.at(0) ?? '').toUpperCase() +
-				fragment.slice(1).toLowerCase(),
+				(fragment.at(0) ?? '').toUpperCase() + fragment.slice(1).toLowerCase()
 		)
 		.join('');
 }

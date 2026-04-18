@@ -16,7 +16,7 @@ import vue from '@vitejs/plugin-vue';
 import vueCustomElements from 'vite-plugin-vue-ce';
 
 export default {
-    plugins: [vueCustomElements(), vue()],
+	plugins: [vueCustomElements(), vue()],
 };
 ```
 
@@ -24,12 +24,12 @@ export default {
 <!-- index.html -->
 <!DOCTYPE html>
 <html>
-  <head>
-    <script type="module" src="./src/components/MyComponent.ce.vue"></script>
-  </head>
-  <body>
-    <my-component></my-component>
-  </body>
+	<head>
+		<script type="module" src="./src/components/MyComponent.ce.vue"></script>
+	</head>
+	<body>
+		<my-component></my-component>
+	</body>
 </html>
 ```
 
@@ -39,11 +39,11 @@ export default {
 
 ```js
 vueCustomElements({
- customElements: {
-  MyComponent: './src/components/MyComponent.ce.vue',
-  'x-app': './src/components/VApp.ce.vue'
- }
-})
+	customElements: {
+		MyComponent: './src/components/MyComponent.ce.vue',
+		'x-app': './src/components/VApp.ce.vue',
+	},
+});
 ```
 
 Maps a custom element name to a component file path.
@@ -69,8 +69,8 @@ When `false` (default), Vite generates assets for `index.html` including the cus
 
 ```js
 vueCustomElements({
- optionFile: './src/ce-options.js'
-})
+	optionFile: './src/ce-options.js',
+});
 ```
 
 ```js
@@ -78,10 +78,10 @@ vueCustomElements({
 import { pinia } from './store';
 
 export default (component) => ({
-  shadowRoot: false,
-  configureApp(app) {
-    app.use(pinia);
-  },
+	shadowRoot: false,
+	configureApp(app) {
+		app.use(pinia);
+	},
 });
 ```
 
@@ -91,8 +91,8 @@ Specifies a module whose default export is a factory function. The factory recei
 
 ```js
 vueCustomElements({
- customElementPrefix: 'x-'
-})
+	customElementPrefix: 'x-',
+});
 ```
 
 Prepends a prefix to all custom element names registered by this plugin, including those explicitly mapped via [`customElements`](#customelements). For example, with `customElementPrefix: 'x-'`, `MyComponent` becomes `x-my-component`.
@@ -101,8 +101,8 @@ Prepends a prefix to all custom element names registered by this plugin, includi
 
 ```js
 vueCustomElements({
- include: ['templates/**/*.html', 'components/**/*.ce.vue']
-})
+	include: ['templates/**/*.html', 'components/**/*.ce.vue'],
+});
 ```
 
 Restricts auto custom element registration to matched files only.
@@ -113,8 +113,8 @@ Vue components not matched by this option will not be registered as custom eleme
 
 ```js
 vueCustomElements({
- exclude: ['static/**/*.html', 'private/**/*.ce.vue']
-})
+	exclude: ['static/**/*.html', 'private/**/*.ce.vue'],
+});
 ```
 
 Disables auto custom element registration for matched files.

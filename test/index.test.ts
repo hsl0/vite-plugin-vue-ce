@@ -12,7 +12,7 @@ function getHooks(plugin: Plugin) {
 		order: string;
 		handler: (
 			this: { error: (msg: string) => never },
-			id: string,
+			id: string
 		) => { code: string } | null;
 	};
 	const resolveId = plugin.resolveId as {
@@ -21,12 +21,12 @@ function getHooks(plugin: Plugin) {
 			this: {
 				resolve: (
 					id: string,
-					importer?: string,
+					importer?: string
 				) => Promise<{ id: string } | null>;
 			},
 			source: string,
 			importer: string | undefined,
-			options: object,
+			options: object
 		) => Promise<unknown>;
 	};
 	return { transformIndexHtml, load, resolveId };
@@ -51,7 +51,7 @@ describe('transformIndexHtml', () => {
 			{
 				path: '/',
 				server: {},
-			},
+			}
 		);
 		expect(result).toContain('/@id/./src/VApp.ce.vue');
 	});
@@ -68,20 +68,22 @@ describe('load', () => {
 		const { load } = getHooks(vueCustomElements());
 		const result = load.handler.call(
 			mockCtx,
-			'\0virtual:vue-ce-register:/path/to/VApp.ce.vue.js',
+			'\0virtual:vue-ce-register:/path/to/VApp.ce.vue.js'
 		);
 		expect(result?.code).toContain('defineCustomElement');
 		expect(result?.code).toContain('customElements.define("v-app"');
 		expect(result?.code).toContain(
-			'import VComponent from "/path/to/VApp.ce.vue"',
+			'import VComponent from "/path/to/VApp.ce.vue"'
 		);
 	});
 
 	it('applies customElementPrefix', () => {
-		const { load } = getHooks(vueCustomElements({ customElementPrefix: 'my-' }));
+		const { load } = getHooks(
+			vueCustomElements({ customElementPrefix: 'my-' })
+		);
 		const result = load.handler.call(
 			mockCtx,
-			'\0virtual:vue-ce-register:/path/to/VApp.ce.vue.js',
+			'\0virtual:vue-ce-register:/path/to/VApp.ce.vue.js'
 		);
 		expect(result?.code).toContain('customElements.define("my-v-app",');
 	});
@@ -90,14 +92,18 @@ describe('load', () => {
 		const { load } = getHooks(vueCustomElements());
 		const result = load.handler.call(
 			mockCtx,
-			'\0virtual:vue-ce-register:/path/HelloWorld.ce.vue.js',
+			'\0virtual:vue-ce-register:/path/HelloWorld.ce.vue.js'
 		);
 		expect(result?.code).toContain('customElements.define("hello-world",');
 	});
 
 	it('returns null for non-virtual module IDs without calling error', () => {
 		const { load } = getHooks(vueCustomElements());
-		const ctx = { error: vi.fn((msg: string): never => { throw new Error(msg); }) };
+		const ctx = {
+			error: vi.fn((msg: string): never => {
+				throw new Error(msg);
+			}),
+		};
 		const result = load.handler.call(ctx, '/some/regular/module.js');
 		expect(result).toBeNull();
 		expect(ctx.error).not.toHaveBeenCalled();
@@ -105,21 +111,25 @@ describe('load', () => {
 
 	it('imports optionFactory and passes it to defineCustomElement when optionFile is set', () => {
 		const { load } = getHooks(
-			vueCustomElements({ optionFile: '/path/to/ce-options.js' }),
+			vueCustomElements({ optionFile: '/path/to/ce-options.js' })
 		);
 		const result = load.handler.call(
 			mockCtx,
-			'\0virtual:vue-ce-register:/path/to/VApp.ce.vue.js',
+			'\0virtual:vue-ce-register:/path/to/VApp.ce.vue.js'
 		);
-		expect(result?.code).toContain('import optionFactory from "/path/to/ce-options.js"');
-		expect(result?.code).toContain('defineCustomElement(VComponent, optionFactory(VComponent))');
+		expect(result?.code).toContain(
+			'import optionFactory from "/path/to/ce-options.js"'
+		);
+		expect(result?.code).toContain(
+			'defineCustomElement(VComponent, optionFactory(VComponent))'
+		);
 	});
 
 	it('does not import optionFactory when optionFile is not set', () => {
 		const { load } = getHooks(vueCustomElements());
 		const result = load.handler.call(
 			mockCtx,
-			'\0virtual:vue-ce-register:/path/to/VApp.ce.vue.js',
+			'\0virtual:vue-ce-register:/path/to/VApp.ce.vue.js'
 		);
 		expect(result?.code).not.toContain('optionFactory');
 		expect(result?.code).toContain('defineCustomElement(VComponent)');
@@ -135,7 +145,7 @@ describe('plugin options', () => {
 					'v-app': samePath,
 					'x-app': samePath,
 				},
-			}),
+			})
 		).toThrow(TypeError);
 	});
 });
@@ -152,20 +162,20 @@ describe('cross-component usage: A uses B, both imported from HTML entry', () =>
 		const mockResolve = vi
 			.fn()
 			.mockImplementation((src: string) =>
-				Promise.resolve({ id: src.replace('./', '/abs/') }),
+				Promise.resolve({ id: src.replace('./', '/abs/') })
 			);
 
 		const resultA = await resolveId.handler.call(
 			{ resolve: mockResolve },
 			'./VApp.ce.vue',
 			'/project/index.html',
-			{},
+			{}
 		);
 		const resultB = await resolveId.handler.call(
 			{ resolve: mockResolve },
 			'./HelloWorld.ce.vue',
 			'/project/index.html',
-			{},
+			{}
 		);
 
 		expect(resultA).toMatchObject({
@@ -183,7 +193,7 @@ describe('cross-component usage: A uses B, both imported from HTML entry', () =>
 			{ resolve: vi.fn() },
 			'./HelloWorld.ce.vue',
 			'/abs/VApp.ce.vue',
-			{},
+			{}
 		);
 		expect(result).toBeNull();
 	});
@@ -192,9 +202,11 @@ describe('cross-component usage: A uses B, both imported from HTML entry', () =>
 		const { load } = getHooks(vueCustomElements());
 		const resultA = load.handler.call(
 			mockCtx,
-			'\0virtual:vue-ce-register:/abs/VApp.ce.vue.js',
+			'\0virtual:vue-ce-register:/abs/VApp.ce.vue.js'
 		);
-		expect(resultA?.code).toContain('import VComponent from "/abs/VApp.ce.vue"');
+		expect(resultA?.code).toContain(
+			'import VComponent from "/abs/VApp.ce.vue"'
+		);
 		expect(resultA?.code).not.toContain('\0virtual:vue-ce-register');
 	});
 
@@ -202,20 +214,22 @@ describe('cross-component usage: A uses B, both imported from HTML entry', () =>
 		const { load } = getHooks(vueCustomElements());
 		const resultA = load.handler.call(
 			mockCtx,
-			'\0virtual:vue-ce-register:/abs/VApp.ce.vue.js',
+			'\0virtual:vue-ce-register:/abs/VApp.ce.vue.js'
 		);
 		const resultB = load.handler.call(
 			mockCtx,
-			'\0virtual:vue-ce-register:/abs/HelloWorld.ce.vue.js',
+			'\0virtual:vue-ce-register:/abs/HelloWorld.ce.vue.js'
 		);
 
 		expect(resultA?.code).toContain('customElements.define("v-app",');
 		expect(resultB?.code).toContain('customElements.define("hello-world",');
 		// Each module only imports its own component
-		expect(resultA?.code).toContain('import VComponent from "/abs/VApp.ce.vue"');
+		expect(resultA?.code).toContain(
+			'import VComponent from "/abs/VApp.ce.vue"'
+		);
 		expect(resultA?.code).not.toContain('HelloWorld');
 		expect(resultB?.code).toContain(
-			'import VComponent from "/abs/HelloWorld.ce.vue"',
+			'import VComponent from "/abs/HelloWorld.ce.vue"'
 		);
 		expect(resultB?.code).not.toContain('VApp');
 	});
@@ -232,7 +246,7 @@ describe('resolveId', () => {
 			{ resolve: mockResolve },
 			'\0virtual:vue-ce-register:./src/VApp.ce.vue.js',
 			undefined,
-			{},
+			{}
 		);
 		expect(result).toMatchObject({
 			id: '\0virtual:vue-ce-register:/abs/path/VApp.ce.vue.js',
@@ -245,7 +259,7 @@ describe('resolveId', () => {
 			{ resolve: vi.fn() },
 			'./VApp.ce.vue',
 			'/some/importer.ts',
-			{},
+			{}
 		);
 		expect(result).toBeNull();
 	});
@@ -256,7 +270,7 @@ describe('resolveId', () => {
 			{ resolve: vi.fn() },
 			'./main.ts',
 			undefined,
-			{},
+			{}
 		);
 		expect(result).toBeNull();
 	});

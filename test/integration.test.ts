@@ -1,5 +1,11 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { build, createServer, type InlineConfig, type Plugin, type ViteDevServer } from 'vite';
+import {
+	build,
+	createServer,
+	type InlineConfig,
+	type Plugin,
+	type ViteDevServer,
+} from 'vite';
 import type { RolldownOutput } from 'rolldown';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
@@ -13,13 +19,16 @@ function getBuildOutputs(result: unknown): RolldownOutput[] {
 type BuildAssets = { js: string; html: string };
 
 async function buildAssets(config: InlineConfig): Promise<BuildAssets> {
-	const result = await build({ ...config, build: { ...config.build, write: false } });
+	const result = await build({
+		...config,
+		build: { ...config.build, write: false },
+	});
 	const outputs = getBuildOutputs(result).flatMap((o) => o.output);
 
 	const js = outputs
 		.filter(
 			(c): c is (typeof outputs)[number] & { type: 'chunk'; code: string } =>
-				c.type === 'chunk',
+				c.type === 'chunk'
 		)
 		.map((c) => c.code)
 		.join('');
@@ -27,7 +36,7 @@ async function buildAssets(config: InlineConfig): Promise<BuildAssets> {
 	const html = outputs
 		.filter(
 			(c): c is (typeof outputs)[number] & { type: 'asset'; source: string } =>
-				c.type === 'asset' && c.fileName.endsWith('.html'),
+				c.type === 'asset' && c.fileName.endsWith('.html')
 		)
 		.map((c) => c.source)
 		.join('');
@@ -37,7 +46,7 @@ async function buildAssets(config: InlineConfig): Promise<BuildAssets> {
 
 const fixturesDir = path.join(
 	path.dirname(fileURLToPath(import.meta.url)),
-	'fixtures',
+	'fixtures'
 );
 
 const mockVuePlugin = (): Plugin => ({
@@ -149,7 +158,7 @@ describe('dev mode', () => {
 	<body>
 		<hello-world></hello-world>
 	</body>
-</html>`,
+</html>`
 		);
 
 		expect(html).toContain('/@id/HelloWorld.ce.vue"');

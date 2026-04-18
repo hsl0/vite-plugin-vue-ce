@@ -4,4 +4,4 @@ function greet(name) {
 	return globalThis.__greetings;
 }
 
-greet("World");
+greet('World');
