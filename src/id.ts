@@ -1,4 +1,4 @@
-export const virtualModulePrefix = 'virtual:vue-ce-register:';
+export const virtualModulePrefix = '\0virtual:vue-ce-register:';
 
 export function createVirtualModuleIDFromSrc(src: string): string {
 	return `${virtualModulePrefix}${src}.js`;

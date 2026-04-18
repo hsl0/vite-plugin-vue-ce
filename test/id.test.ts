@@ -8,13 +8,13 @@ import {
 describe('createVirtualModuleIDFromSrc', () => {
 	it('wraps absolute path with virtual module prefix', () => {
 		expect(createVirtualModuleIDFromSrc('/abs/path/VApp.ce.vue')).toBe(
-			'virtual:vue-ce-register:/abs/path/VApp.ce.vue.js',
+			'\0virtual:vue-ce-register:/abs/path/VApp.ce.vue.js',
 		);
 	});
 
 	it('preserves relative paths as-is', () => {
 		expect(createVirtualModuleIDFromSrc('./src/VApp.ce.vue')).toBe(
-			'virtual:vue-ce-register:./src/VApp.ce.vue.js',
+			'\0virtual:vue-ce-register:./src/VApp.ce.vue.js',
 		);
 	});
 
@@ -29,7 +29,7 @@ describe('getSrcFromVirtualModule', () => {
 	it('extracts src from virtual module ID', () => {
 		expect(
 			getSrcFromVirtualModule(
-				'virtual:vue-ce-register:/abs/path/VApp.ce.vue.js',
+				'\0virtual:vue-ce-register:/abs/path/VApp.ce.vue.js',
 			),
 		).toBe('/abs/path/VApp.ce.vue');
 	});

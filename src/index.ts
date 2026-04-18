@@ -63,17 +63,18 @@ export default function vueCustomElements(pluginOptions: Options = {}): Plugin {
 		transformIndexHtml: {
 			order: 'pre',
 			handler(html, ctx) {
+				// Prepend /@id/ on .ce.vue imports when dev server mode
+
+				// Transform only on dev server
+				if (!ctx.server) return html;
+
+				// Only for included entry
 				if (!includeFilter(ctx.path)) return html;
 
 				const $ = Cheerio.load(html);
 
 				// Replace .ce.vue script imports into virtual module imports in html
-				$('script[src$=".ce.vue"]').attr(
-					'src',
-					(i, src) =>
-						(ctx.server ? '/@id/' : '') +
-						createVirtualModuleIDFromSrc(src),
-				);
+				$('script[src$=".ce.vue"]').attr('src', (i, src) => '/@id/' + src);
 
 				return $.html();
 			},
@@ -82,13 +83,21 @@ export default function vueCustomElements(pluginOptions: Options = {}): Plugin {
 		resolveId: {
 			order: 'pre',
 			async handler(source, importer, options) {
-				// Only when directly importing virtual module (from html) or .ce.vue entrypoint
+				// Handle virtual module import
+				// Only when importing from html or .ce.vue entrypoint
+				const isDirectVirtualModuleImport =
+					source.startsWith(virtualModulePrefix);
+				const isCustomElementModule =
+					source.endsWith('.ce.vue') && includeFilter(source);
+				const isEntry = !importer;
+				const isImportedFromHTMLEntry =
+					importer?.endsWith('.html') && includeFilter(importer);
+
 				if (
 					!(
-						source.startsWith(virtualModulePrefix) ||
-						(source.endsWith('.ce.vue') &&
-							!importer &&
-							includeFilter(source))
+						isDirectVirtualModuleImport ||
+						(isCustomElementModule &&
+							(isEntry || isImportedFromHTMLEntry))
 					)
 				)
 					return null;
