@@ -30,8 +30,9 @@ jobs:
         with:
           node-version: lts/*
           registry-url: https://registry.npmjs.org/
-      - run: npm version ${{ github.event.release.tag_name }} --allow-same-version --no-git-tag-version
+      - run: npm version ${{ github.event.release.tag_name }} --allow-same-version --no-git-tag-version --no-commit-hooks
       - run: npm ci
+      - run: npm run build
       - run: npm publish --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
