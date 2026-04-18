@@ -19,6 +19,7 @@ jobs:
     needs:
       - build
       - test
+    environment: Publish
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -28,6 +29,6 @@ jobs:
           registry-url: https://registry.npmjs.org/
       - run: npm version ${{ github.event.release.tag_name }} --allow-same-version --no-git-tag-version
       - run: npm ci
-      - run: npm publish
+      - run: npm publish --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
