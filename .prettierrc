@@ -6,9 +6,7 @@
 	"singleQuote": true,
 	"overrides": [
 		{
-			"files": [
-				"*.yml"
-			],
+			"files": ["*.yml"],
 			"options": {
 				"useTabs": false,
 				"tabWidth": 2
