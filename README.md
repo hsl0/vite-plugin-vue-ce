@@ -46,6 +46,12 @@ vueCustomElements({
 });
 ```
 
+```ts
+interface Options {
+	customElements?: Record<string, string>;
+}
+```
+
 Maps a custom element name to a component file path.
 
 The key is the element name (PascalCase or kebab-case) and the value is the component file path. PascalCase keys are converted to kebab-case automatically (e.g. `MyComponent` → `my-component`).
@@ -59,6 +65,12 @@ vueCustomElements({
 	customElements: { ... },
 	lib: true
 })
+```
+
+```ts
+interface Options {
+	lib?: boolean;
+}
 ```
 
 When `true`, Vite generates a single JS file that registers the custom elements explicitly listed in the [`customElements`](#customelements) option.
@@ -85,6 +97,19 @@ export default (name, component) => ({
 });
 ```
 
+```ts
+interface Options {
+	optionFile?: string;
+}
+
+type CustomElementOptionFactory = (
+	name: string,
+	component:
+		| (ComponentOptions & CustomElementOptions)
+		| ComponentOptions['setup']
+) => CustomElementOptions;
+```
+
 Specifies a module whose default export is a factory function. The factory receives the custom element name and component options and returns [`CustomElementOptions`](https://vuejs.org/api/custom-elements.html#definecustomelement), passed as the second argument to `defineCustomElement`. Applies to all custom elements registered by this plugin.
 
 ### customElementPrefix
@@ -93,6 +118,12 @@ Specifies a module whose default export is a factory function. The factory recei
 vueCustomElements({
 	customElementPrefix: 'x-',
 });
+```
+
+```ts
+interface Options {
+	customElementPrefix?: string;
+}
 ```
 
 Prepends a prefix to all custom element names registered by this plugin, including those explicitly mapped via [`customElements`](#customelements). For example, with `customElementPrefix: 'x-'`, `MyComponent` becomes `x-my-component`.
@@ -105,9 +136,17 @@ vueCustomElements({
 });
 ```
 
+```ts
+interface Options {
+	include?: string | RegExp | (string | RegExp)[];
+}
+```
+
 Restricts auto custom element registration to matched files only.
 
 Vue components not matched by this option will not be registered as custom elements, and `.ce.vue` script tags in unmatched HTML entry points will not be transformed.
+
+The default value is `[/\.ce\.vue$/, /\.html$/]`.
 
 ### exclude
 
@@ -115,6 +154,12 @@ Vue components not matched by this option will not be registered as custom eleme
 vueCustomElements({
 	exclude: ['static/**/*.html', 'private/**/*.ce.vue'],
 });
+```
+
+```ts
+interface Options {
+	exclude?: string | RegExp | (string | RegExp)[];
+}
 ```
 
 Disables auto custom element registration for matched files.
