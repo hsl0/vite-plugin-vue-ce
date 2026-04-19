@@ -49,11 +49,37 @@ describe('transformIndexHtml', () => {
 		const result = transformIndexHtml.handler(
 			mockHTML('./src/VApp.ce.vue', '<v-app />'),
 			{
-				path: '/',
+				path: '/index.html',
 				server: {},
 			}
 		);
 		expect(result).toContain('/@id/./src/VApp.ce.vue');
+	});
+
+	it('does not transform plain .vue script with default include', () => {
+		const { transformIndexHtml } = getHooks(vueCustomElements());
+		const result = transformIndexHtml.handler(
+			mockHTML('./src/VApp.vue', '<v-app />'),
+			{
+				path: '/index.html',
+				server: {},
+			}
+		);
+		expect(result).not.toContain('/@id/');
+	});
+
+	it('transforms plain .vue script when include matches', () => {
+		const { transformIndexHtml } = getHooks(
+			vueCustomElements({ include: [/\.vue$/, /\.html$/] })
+		);
+		const result = transformIndexHtml.handler(
+			mockHTML('./src/VApp.vue', '<v-app />'),
+			{
+				path: '/index.html',
+				server: {},
+			}
+		);
+		expect(result).toContain('/@id/./src/VApp.vue');
 	});
 });
 
@@ -146,6 +172,16 @@ describe('load', () => {
 		expect(() =>
 			load.handler.call(ctx, '\0virtual:vue-ce-register:/path/to/App.ce.vue.js')
 		).toThrow(/Invalid custom element name/);
+	});
+
+	it('extracts component name from plain .vue file', () => {
+		const { load } = getHooks(vueCustomElements());
+		const result = load.handler.call(
+			mockCtx,
+			'\0virtual:vue-ce-register:/path/to/VApp.vue.js'
+		);
+		expect(result?.code).toContain('customElements.define("v-app",');
+		expect(result?.code).toContain('import VComponent from "/path/to/VApp.vue"');
 	});
 });
 
@@ -272,6 +308,36 @@ describe('resolveId', () => {
 			{}
 		);
 		expect(result).toBeNull();
+	});
+
+	it('ignores plain .vue import from HTML with default include', async () => {
+		const { resolveId } = getHooks(vueCustomElements());
+		const result = await resolveId.handler.call(
+			{ resolve: vi.fn() },
+			'./VApp.vue',
+			'/project/index.html',
+			{}
+		);
+		expect(result).toBeNull();
+	});
+
+	it('resolves plain .vue import from HTML when include matches', async () => {
+		const { resolveId } = getHooks(
+			vueCustomElements({ include: [/\.vue$/, /\.html$/] })
+		);
+		const mockResolve = vi
+			.fn()
+			.mockResolvedValue({ id: '/abs/VApp.vue' });
+
+		const result = await resolveId.handler.call(
+			{ resolve: mockResolve },
+			'./VApp.vue',
+			'/project/index.html',
+			{}
+		);
+		expect(result).toMatchObject({
+			id: '\0virtual:vue-ce-register:/abs/VApp.vue.js',
+		});
 	});
 
 	it('does not produce double \\0virtual:vue-ce-register: prefix when skipSelf is bypassed', async () => {

@@ -1,5 +1,5 @@
 import * as Cheerio from 'cheerio';
-import { resolve } from 'node:path';
+import * as path from 'node:path';
 import { createFilter } from 'vite';
 
 import { pascalCaseToKebabCase } from './case.js';
@@ -36,13 +36,13 @@ export default function vueCustomElements(pluginOptions: Options = {}): Plugin {
 	const resolving = Symbol('resolving by vue-ce');
 	const customElementPrefix = pluginOptions.customElementPrefix || '';
 	const includeFilter = createFilter(
-		pluginOptions.include,
+		pluginOptions.include || [/\.ce\.vue$/, /\.html$/],
 		pluginOptions.exclude
 	);
 	const reverseMap = Object.entries(pluginOptions.customElements || {}).reduce<
 		Record<string, string[]>
 	>((rmap, [key, value]) => {
-		const resolved = resolve(value);
+		const resolved = path.resolve(value);
 
 		return {
 			...rmap,
@@ -76,9 +76,10 @@ export default function vueCustomElements(pluginOptions: Options = {}): Plugin {
 				if (!includeFilter(ctx.path)) return html;
 
 				const $ = Cheerio.load(html);
-
 				// Replace .ce.vue script imports into virtual module imports in html
-				$('script[src$=".ce.vue"]').attr('src', (i, src) => '/@id/' + src);
+				$('script[src][type="module"]')
+					.filter((i, el) => includeFilter($(el).attr('src')))
+					.attr('src', (i, src) => '/@id/' + src);
 
 				return $.html();
 			},
@@ -94,7 +95,7 @@ export default function vueCustomElements(pluginOptions: Options = {}): Plugin {
 				const isDirectVirtualModuleImport =
 					source.startsWith(virtualModulePrefix);
 				const isCustomElementModule =
-					source.endsWith('.ce.vue') && includeFilter(source);
+					source.endsWith('.vue') && includeFilter(source);
 				const isEntry = !importer;
 				const isImportedFromHTMLEntry =
 					importer?.endsWith('.html') && includeFilter(importer);
@@ -127,10 +128,10 @@ export default function vueCustomElements(pluginOptions: Options = {}): Plugin {
 							...reverseMap[src],
 						]);
 					}
-					if (reverseMap[resolve(resolved.id)]) {
+					if (reverseMap[path.resolve(resolved.id)]) {
 						resolvedMap[resolved.id] = new Set([
 							...(resolvedMap[resolved.id] ?? []),
-							...reverseMap[resolve(resolved.id)]!,
+							...reverseMap[path.resolve(resolved.id)]!,
 						]);
 					}
 
@@ -149,10 +150,7 @@ export default function vueCustomElements(pluginOptions: Options = {}): Plugin {
 				if (!id.startsWith(virtualModulePrefix)) return null;
 
 				const src = getSrcFromVirtualModule(id);
-				const componentName = src
-					.split('/')
-					.at(-1)
-					?.slice(0, -'.ce.vue'.length);
+				const componentName = path.parse(src).name.split('.').at(0);
 
 				if (!componentName)
 					return this.error(`Invalid component name in ${src}`);

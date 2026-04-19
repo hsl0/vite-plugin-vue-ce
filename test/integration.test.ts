@@ -149,7 +149,7 @@ describe('dev mode', () => {
 		await server.listen();
 
 		const html = await server.transformIndexHtml(
-			'/',
+			'/index.html',
 			`<!doctype html>
 <html>
 	<head>
