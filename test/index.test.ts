@@ -332,7 +332,7 @@ describe('resolveId', () => {
 					options?: object
 				): Promise<{ id: string } | null> => {
 					callCount++;
-					if (callCount > 5)
+					if (callCount > 3)
 						throw new Error(
 							`Infinite loop: resolveId re-entered ${callCount} times without skipSelf`
 						);
