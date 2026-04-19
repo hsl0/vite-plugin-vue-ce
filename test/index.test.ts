@@ -261,6 +261,61 @@ describe('resolveId', () => {
 		expect(result).toBeNull();
 	});
 
+	it('does not produce double \\0virtual:vue-ce-register: prefix when skipSelf is bypassed', async () => {
+		// v0.2.0 added skipSelf:true but not the custom[resolving] marker.
+		// If an intermediate plugin bypasses skipSelf and routes this.resolve() back
+		// into the same handler, that handler wraps the source again, and the outer
+		// call wraps the already-wrapped id a second time → double prefix.
+		// v0.2.1 fixes this by passing custom[resolving] so re-entry returns null.
+		const { resolveId } = getHooks(vueCustomElements());
+		let callDepth = 0;
+
+		const ctx = {
+			resolve: vi.fn(
+				async (
+					src: string,
+					importer?: string,
+					options?: object
+				): Promise<{ id: string } | null> => {
+					callDepth++;
+					if (callDepth === 1) {
+						// First call: simulate skipSelf being bypassed — re-enter the handler
+						// with the exact options the plugin passed (including any custom marker).
+						const reentryResult = await resolveId.handler.call(
+							ctx,
+							src,
+							importer,
+							options ?? {}
+						);
+						callDepth--;
+						// Return whatever the re-entered handler produced.
+						// If the guard is missing, this will be a virtual module id,
+						// causing the outer call to wrap it again → double prefix.
+						return (
+							(reentryResult as { id: string } | null) ?? {
+								id: '/abs/' + src.replace('./', ''),
+							}
+						);
+					}
+					// Deeper calls: just return the real absolute path to stop recursion.
+					callDepth--;
+					return { id: '/abs/' + src.replace('./', '') };
+				}
+			),
+		};
+
+		const result = await resolveId.handler.call(
+			ctx,
+			'./VApp.ce.vue',
+			'/project/index.html',
+			{}
+		);
+
+		const prefix = '\0virtual:vue-ce-register:';
+		const resultId = (result as { id?: string } | null)?.id ?? '';
+		expect(resultId).not.toContain(prefix + prefix);
+	});
+
 	it('does not re-enter itself when resolving .ce.vue from HTML (no infinite loop)', async () => {
 		const { resolveId } = getHooks(vueCustomElements());
 		let callCount = 0;
@@ -277,7 +332,7 @@ describe('resolveId', () => {
 					options?: object
 				): Promise<{ id: string } | null> => {
 					callCount++;
-					if (callCount > 10)
+					if (callCount > 5)
 						throw new Error(
 							`Infinite loop: resolveId re-entered ${callCount} times without skipSelf`
 						);
