@@ -181,7 +181,9 @@ describe('load', () => {
 			'\0virtual:vue-ce-register:/path/to/VApp.vue.js'
 		);
 		expect(result?.code).toContain('customElements.define("v-app",');
-		expect(result?.code).toContain('import VComponent from "/path/to/VApp.vue"');
+		expect(result?.code).toContain(
+			'import VComponent from "/path/to/VApp.vue"'
+		);
 	});
 });
 
@@ -325,9 +327,7 @@ describe('resolveId', () => {
 		const { resolveId } = getHooks(
 			vueCustomElements({ include: [/\.vue$/, /\.html$/] })
 		);
-		const mockResolve = vi
-			.fn()
-			.mockResolvedValue({ id: '/abs/VApp.vue' });
+		const mockResolve = vi.fn().mockResolvedValue({ id: '/abs/VApp.vue' });
 
 		const result = await resolveId.handler.call(
 			{ resolve: mockResolve },
