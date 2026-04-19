@@ -134,6 +134,19 @@ describe('load', () => {
 		expect(result?.code).not.toContain('optionFactory');
 		expect(result?.code).toContain('defineCustomElement(VComponent)');
 	});
+
+	it('throws an error when the generated custom element name has no hyphen', () => {
+		const { load } = getHooks(vueCustomElements());
+		const ctx = {
+			error: vi.fn((msg: string): never => {
+				throw new Error(msg);
+			}),
+		};
+		// "App.ce.vue" → "app", which has no hyphen → invalid custom element name
+		expect(() =>
+			load.handler.call(ctx, '\0virtual:vue-ce-register:/path/to/App.ce.vue.js')
+		).toThrow(/Invalid custom element name/);
+	});
 });
 
 describe('cross-component usage: A uses B, both imported from HTML entry', () => {

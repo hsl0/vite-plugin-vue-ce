@@ -158,9 +158,17 @@ export default function vueCustomElements(pluginOptions: Options = {}): Plugin {
 					return this.error(`Invalid component name in ${src}`);
 
 				const ceNames = Array.from(resolvedMap[src] ?? [componentName]).map(
-					(name) =>
-						(customElementPrefix || '') +
-						pascalCaseToKebabCase(name ?? componentName)
+					(name) => {
+						const transformed =
+							(customElementPrefix || '') +
+							pascalCaseToKebabCase(name ?? componentName);
+
+						if (!transformed.includes('-')) {
+							throw this.error(`Invalid custom element name: ${transformed}`);
+						}
+
+						return transformed;
+					}
 				);
 
 				// Generate customElement definition code
